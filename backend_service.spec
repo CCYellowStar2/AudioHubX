@@ -66,13 +66,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    # 2. 关键改动：
-    # 在 macOS 上，我们必须让 console=True，以避免创建冲突的 .app 捆绑包。
-    # 在 Windows/Linux 上，我们仍然需要 console=False 来隐藏黑窗口。
-    console=is_macos,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
 )
+
