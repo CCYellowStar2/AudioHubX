@@ -1,0 +1,6 @@
+numpy
+av 
+PyQt5 
+pyinstaller 
+python-shell
+pyaudio
