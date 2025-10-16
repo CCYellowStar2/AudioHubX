@@ -1,0 +1,61 @@
+# .github/workflows/build.yml
+
+name: Build & Release AudioHub
+
+# 触发条件：当代码被推送到 main 分支时，或者手动点击 "Run workflow" 时
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 核心：使用矩阵策略，让这个任务在三个不同的操作系统上并行运行
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    # 指定任务运行在哪个虚拟机上（由矩阵变量决定）
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    # 第 1 步：获取你的代码
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 第 2 步：根据操作系统设置 Node.js 环境
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22' # 使用一个稳定的 LTS 版本
+        cache: 'npm'
+
+    # 第 3 步：根据操作系统设置 Python 环境
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10' # 指定你的 Python 版本
+        cache: 'pip'
+
+    # 第 4 步：安装所有依赖
+    - name: Install dependencies
+      run: |
+        pip install pyinstaller PyQt5 pyaudio av numpy python-shell
+        npm install
+
+    # 第 5 步：编译 Python 后端 (针对不同操作系统)
+    - name: Build Python backend
+      run: pyinstaller --name backend_service --onefile --noconsole --distpath dist_py backend.py
+
+    # 第 6 步：打包 Electron 应用
+    - name: Build Electron app
+      run: npm run build
+
+    # 第 7 步：上传打包好的产物
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        # 产物名称会根据操作系统命名，例如 "AudioHub-macOS"
+        name: AudioHub-${{ matrix.os }}
+        # 上传 release 文件夹里的所有内容
+        path: release/
