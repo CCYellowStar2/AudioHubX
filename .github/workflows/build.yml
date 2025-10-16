@@ -70,7 +70,7 @@ jobs:
 
     # 第 5 步：编译 Python 后端 (针对不同操作系统)
     - name: Build Python backend
-      run: pyinstaller --name backend_service --onefile --noconsole --distpath dist_py backend.py
+      run: pyinstaller --noconfirm --distpath dist_py backend_service.spec
 
     # 第 6 步：打包 Electron 应用
     - name: Build Electron app
