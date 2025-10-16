@@ -29,6 +29,15 @@ jobs:
       with:
         node-version: '22' # 使用一个稳定的 LTS 版本
         cache: 'npm'
+        
+    # 2.5. 为 pip 添加缓存，加速后续构建
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     # 第 3 步：根据操作系统设置 Python 环境
     - name: Set up Python
@@ -40,8 +49,24 @@ jobs:
     # 第 4 步：安装所有依赖
     - name: Install dependencies
       run: |
-        pip install pyinstaller PyQt5 pyaudio av numpy python-shell
+        # --- 步骤 1: 先安装系统级依赖 ---
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y portaudio19-dev libasound2-dev ffmpeg upx-ucl
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          # ↓↓↓ 核心修改在这里 ↓↓↓
+          brew install portaudio ffmpeg upx
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          choco install ffmpeg upx
+        fi
+
+        # --- 步骤 2: 再安装 Python 依赖 ---
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
         npm install
+      shell: bash
+        
 
     # 第 5 步：编译 Python 后端 (针对不同操作系统)
     - name: Build Python backend
