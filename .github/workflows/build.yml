@@ -74,7 +74,7 @@ jobs:
 
     # 第 6 步：打包 Electron 应用
     - name: Build Electron app
-      run: npm run build
+      run: npm run build --publish never
 
     # 第 7 步：上传打包好的产物
     - name: Upload artifact
