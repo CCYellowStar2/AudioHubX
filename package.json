@@ -1,0 +1,51 @@
+{
+  "name": "audiohub",
+  "version": "1.0.0",
+  "description": "A modern audio player and manager.",
+  "main": "main.js",
+  "author": "CCYellowStar",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "electron-log": "^5.4.3",
+    "python-shell": "^5.0.0"
+  },
+  "devDependencies": {
+    "electron": "^38.3.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.ccyellowstar.audiohub",
+    "productName": "AudioHub",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js",
+      "style.css"
+    ],
+    "extraResources": [
+      {
+        "from": "dist_py/",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.icns"
+    }
+  }
+}
