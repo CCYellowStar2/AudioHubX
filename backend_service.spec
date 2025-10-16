@@ -2,7 +2,10 @@
 import sys
 import os
 
-# 获取 PyAV 的 FFmpeg 库
+# 1. 定义一个变量来判断我们是否在 macOS 上
+is_macos = sys.platform == 'darwin'
+
+# 获取 PyAV 的 FFmpeg 库 (你的函数，保持不变)
 def get_av_libs():
     try:
         import av
@@ -16,54 +19,35 @@ def get_av_libs():
         else:  # Linux
             lib_ext = '.so'
         
-        # 遍历 av 包目录查找动态库
         for root, dirs, files in os.walk(av_path):
             for file in files:
                 if file.endswith(lib_ext) or '.so.' in file:
                     full_path = os.path.join(root, file)
+                    # 将动态库放在可执行文件的同一目录下
                     libs.append((full_path, '.'))
         
         return libs
     except ImportError:
         return []
+
 a = Analysis(
     ['backend.py'],
     pathex=[],
     binaries=get_av_libs(),
     datas=[],
     hiddenimports=[
-        'av',
-        'av.audio',
-        'av.container',
-        'av.codec',
-		'pyaudio',
-	],
+        'av', 'av.audio', 'av.container', 'av.codec', 'pyaudio',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        'PyQt5.QtBluetooth',
-        'PyQt5.QtDesigner',
-        'PyQt5.QtLocation',
-        'PyQt5.QtMultimedia',
-        'PyQt5.QtMultimediaWidgets',
-        'PyQt5.QtNfc',
-        'PyQt5.QtPositioning',
-        'PyQt5.QtQml',
-        'PyQt5.QtQuick',
-        'PyQt5.QtSensors',
-        'PyQt5.QtSerialPort',
-        'PyQt5.QtSql',
-        'PyQt5.QtSvg',
-        'PyQt5.QtTest',
-        'PyQt5.QtWebChannel',
-        'PyQt5.QtWebEngineCore',
-        'PyQt5.QtWebEngineWidgets',
-        'PyQt5.QtWebSockets',
-        'PyQt5.QtXml',
-        'PyQt5.Qsci',
-        'pygame'
-	],
+        'PyQt5.QtBluetooth', 'PyQt5.QtDesigner', 'PyQt5.QtLocation', 'PyQt5.QtMultimedia',
+        'PyQt5.QtMultimediaWidgets', 'PyQt5.QtNfc', 'PyQt5.QtPositioning', 'PyQt5.QtQml',
+        'PyQt5.QtQuick', 'PyQt5.QtSensors', 'PyQt5.QtSerialPort', 'PyQt5.QtSql', 'PyQt5.QtSvg',
+        'PyQt5.QtTest', 'PyQt5.QtWebChannel', 'PyQt5.QtWebEngineCore', 'PyQt5.QtWebEngineWidgets',
+        'PyQt5.QtWebSockets', 'PyQt5.QtXml', 'PyQt5.Qsci', 'pygame'
+    ],
     noarchive=False,
     optimize=0,
 )
@@ -82,22 +66,13 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    # 2. 关键改动：
+    # 在 macOS 上，我们必须让 console=True，以避免创建冲突的 .app 捆绑包。
+    # 在 Windows/Linux 上，我们仍然需要 console=False 来隐藏黑窗口。
+    console=is_macos,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
 )
-# macOS .app 打包
-if sys.platform == 'darwin':
-    app = BUNDLE(
-        exe,
-        name='backend_service',
-        icon=None,
-        bundle_identifier='com.ccy.backend_service',
-        info_plist={
-            'NSHighResolutionCapable': 'True',
-            'LSBackgroundOnly': 'False',
-        },
-    )
