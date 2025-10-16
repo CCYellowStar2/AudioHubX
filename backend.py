@@ -1,10 +1,10 @@
 import os
 import sys
-if sys.stdout.encoding != 'utf-8':
+if sys.stdout and sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
-if sys.stdin.encoding != 'utf-8':
+if sys.stdin and sys.stdin.encoding != 'utf-8':
     sys.stdin.reconfigure(encoding='utf-8')
-if sys.stderr.encoding != 'utf-8':
+if sys.stderr and sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8')
 import json
 import time
@@ -625,4 +625,5 @@ if __name__ == "__main__":
     # Start the thread
     command_thread.start()
     
+
     sys.exit(app.exec_())
