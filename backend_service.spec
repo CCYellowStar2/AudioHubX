@@ -1,10 +1,35 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
+import os
 
-
+# 获取 PyAV 的 FFmpeg 库
+def get_av_libs():
+    try:
+        import av
+        av_path = os.path.dirname(av.__file__)
+        libs = []
+        
+        if sys.platform == 'win32':
+            lib_ext = '.dll'
+        elif sys.platform == 'darwin':
+            lib_ext = '.dylib'
+        else:  # Linux
+            lib_ext = '.so'
+        
+        # 遍历 av 包目录查找动态库
+        for root, dirs, files in os.walk(av_path):
+            for file in files:
+                if file.endswith(lib_ext) or '.so.' in file:
+                    full_path = os.path.join(root, file)
+                    libs.append((full_path, '.'))
+        
+        return libs
+    except ImportError:
+        return []
 a = Analysis(
     ['backend.py'],
     pathex=[],
-    binaries=[],
+    binaries=get_av_libs(),
     datas=[],
     hiddenimports=[
         'av',
@@ -64,3 +89,15 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+# macOS .app 打包
+if sys.platform == 'darwin':
+    app = BUNDLE(
+        exe,
+        name='backend_service',
+        icon=None,
+        bundle_identifier='com.ccy.backend_service',
+        info_plist={
+            'NSHighResolutionCapable': 'True',
+            'LSBackgroundOnly': 'False',
+        },
+    )
